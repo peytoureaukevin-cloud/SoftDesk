@@ -1,0 +1,32 @@
+[project]
+name = "softdesk-api"
+version = "0.1.0"
+description = "API REST sécurisée de suivi de projets et de problèmes techniques."
+authors = [{name = "Kevin Peytoureau"}]
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "django (>=5.2,<6.0)",
+    "djangorestframework (>=3.16,<4.0)",
+    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.17.5,<0.18.0)"
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-exclude = ["**/migrations/*.py", "tmp"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
