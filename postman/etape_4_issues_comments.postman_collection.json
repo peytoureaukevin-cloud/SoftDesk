@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "SoftDesk - Étape 4 - Issues et commentaires",
+    "description": "Exécuter les requêtes dans l'ordre. La collection crée toutes les données nécessaires.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://127.0.0.1:8000"},
+    {"key": "author_id", "value": ""},
+    {"key": "contributor_id", "value": ""},
+    {"key": "outsider_id", "value": ""},
+    {"key": "project_id", "value": ""},
+    {"key": "issue_id", "value": ""},
+    {"key": "comment_id", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "1 - Créer l'auteur",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"username\": \"auteur_etape_4\",\n  \"password\": \"MotDePasseSolide2026!\",\n  \"age\": 35\n}"},
+        "url": "{{base_url}}/api/users/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Auteur créé : 201', () => pm.response.to.have.status(201));",
+        "if (pm.response.code === 201) pm.collectionVariables.set('author_id', pm.response.json().id);"
+      ]}}]
+    },
+    {
+      "name": "2 - Créer le contributeur",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"username\": \"contributeur_etape_4\",\n  \"password\": \"MotDePasseSolide2026!\",\n  \"age\": 28\n}"},
+        "url": "{{base_url}}/api/users/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Contributeur créé : 201', () => pm.response.to.have.status(201));",
+        "if (pm.response.code === 201) pm.collectionVariables.set('contributor_id', pm.response.json().id);"
+      ]}}]
+    },
+    {
+      "name": "3 - Créer un utilisateur extérieur",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"username\": \"exterieur_etape_4\",\n  \"password\": \"MotDePasseSolide2026!\",\n  \"age\": 30\n}"},
+        "url": "{{base_url}}/api/users/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Utilisateur créé : 201', () => pm.response.to.have.status(201));",
+        "if (pm.response.code === 201) pm.collectionVariables.set('outsider_id', pm.response.json().id);"
+      ]}}]
+    },
+    {
+      "name": "4 - Créer le projet",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"title\": \"Portail client\",\n  \"description\": \"Projet de démonstration de l'étape 4.\",\n  \"type\": \"FRONT_END\",\n  \"author_id\": {{author_id}}\n}"},
+        "url": "{{base_url}}/api/projects/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Projet créé : 201', () => pm.response.to.have.status(201));",
+        "if (pm.response.code === 201) pm.collectionVariables.set('project_id', pm.response.json().id);"
+      ]}}]
+    },
+    {
+      "name": "5 - Ajouter le contributeur au projet",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"user_id\": {{contributor_id}}\n}"},
+        "url": "{{base_url}}/api/projects/{{project_id}}/contributors/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Contributeur ajouté : 201', () => pm.response.to.have.status(201));"
+      ]}}]
+    },
+    {
+      "name": "6 - Créer une issue",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"title\": \"Corriger la connexion\",\n  \"description\": \"Le message d'erreur doit être clarifié.\",\n  \"tag\": \"BUG\",\n  \"priority\": \"HIGH\",\n  \"status\": \"TO_DO\",\n  \"author_id\": {{author_id}},\n  \"assignee_id\": {{contributor_id}}\n}"},
+        "url": "{{base_url}}/api/projects/{{project_id}}/issues/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Issue créée : 201', () => pm.response.to.have.status(201));",
+        "if (pm.response.code === 201) pm.collectionVariables.set('issue_id', pm.response.json().id);"
+      ]}}]
+    },
+    {
+      "name": "7 - Refuser une assignation extérieure",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"title\": \"Assignation interdite\",\n  \"description\": \"Cette création doit être refusée.\",\n  \"tag\": \"TASK\",\n  \"priority\": \"LOW\",\n  \"author_id\": {{author_id}},\n  \"assignee_id\": {{outsider_id}}\n}"},
+        "url": "{{base_url}}/api/projects/{{project_id}}/issues/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Assignation refusée : 400', () => pm.response.to.have.status(400));"
+      ]}}]
+    },
+    {
+      "name": "8 - Terminer l'issue",
+      "request": {
+        "method": "PATCH",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"status\": \"FINISHED\"\n}"},
+        "url": "{{base_url}}/api/projects/{{project_id}}/issues/{{issue_id}}/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Issue modifiée : 200', () => pm.response.to.have.status(200));"
+      ]}}]
+    },
+    {
+      "name": "9 - Créer un commentaire",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"description\": \"La correction est prête à être testée.\",\n  \"author_id\": {{contributor_id}}\n}"},
+        "url": "{{base_url}}/api/projects/{{project_id}}/issues/{{issue_id}}/comments/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Commentaire créé : 201', () => pm.response.to.have.status(201));",
+        "if (pm.response.code === 201) pm.collectionVariables.set('comment_id', pm.response.json().id);"
+      ]}}]
+    },
+    {
+      "name": "10 - Modifier le commentaire",
+      "request": {
+        "method": "PATCH",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"description\": \"La correction a été testée et validée.\"\n}"},
+        "url": "{{base_url}}/api/projects/{{project_id}}/issues/{{issue_id}}/comments/{{comment_id}}/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Commentaire modifié : 200', () => pm.response.to.have.status(200));"
+      ]}}]
+    },
+    {
+      "name": "11 - Supprimer le commentaire",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/projects/{{project_id}}/issues/{{issue_id}}/comments/{{comment_id}}/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Commentaire supprimé : 204', () => pm.response.to.have.status(204));"
+      ]}}]
+    },
+    {
+      "name": "12 - Supprimer l'issue",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/projects/{{project_id}}/issues/{{issue_id}}/"
+      },
+      "event": [{"listen": "test", "script": {"exec": [
+        "pm.test('Issue supprimée : 204', () => pm.response.to.have.status(204));"
+      ]}}]
+    }
+  ]
+}

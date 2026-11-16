@@ -1,0 +1,343 @@
+{
+  "info": {
+    "_postman_id": "d4f84652-31dd-4c90-a2bd-softdeskfinal",
+    "name": "SoftDesk API - parcours complet",
+    "description": "Parcours reproductible de l'inscription jusqu'aux commentaires avec JWT, permissions et pagination. Exécuter les requêtes dans l'ordre.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://127.0.0.1:8000"},
+    {"key": "password", "value": "MotDePasseSolide2026!"},
+    {"key": "author_username", "value": "softdesk_author"},
+    {"key": "contributor_username", "value": "softdesk_contributor"},
+    {"key": "author_id", "value": ""},
+    {"key": "contributor_id", "value": ""},
+    {"key": "author_access", "value": ""},
+    {"key": "author_refresh", "value": ""},
+    {"key": "contributor_access", "value": ""},
+    {"key": "project_id", "value": ""},
+    {"key": "contribution_id", "value": ""},
+    {"key": "issue_id", "value": ""},
+    {"key": "comment_id", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "1 - Authentification",
+      "item": [
+        {
+          "name": "Inscrire l'auteur",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{author_username}}\",\n  \"password\": \"{{password}}\",\n  \"age\": 35,\n  \"can_be_contacted\": true,\n  \"can_data_be_shared\": false\n}"
+            },
+            "url": "{{base_url}}/api/signup/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Création ou utilisateur déjà présent', () => pm.expect([201, 400]).to.include(pm.response.code));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('author_id', pm.response.json().id);"
+            ]}
+          }]
+        },
+        {
+          "name": "Inscrire le contributeur",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{contributor_username}}\",\n  \"password\": \"{{password}}\",\n  \"age\": 29,\n  \"can_be_contacted\": false,\n  \"can_data_be_shared\": false\n}"
+            },
+            "url": "{{base_url}}/api/signup/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Création ou utilisateur déjà présent', () => pm.expect([201, 400]).to.include(pm.response.code));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('contributor_id', pm.response.json().id);"
+            ]}
+          }]
+        },
+        {
+          "name": "Connecter l'auteur",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{author_username}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{base_url}}/api/token/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('JWT obtenu', () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('author_access', data.access);",
+              "pm.collectionVariables.set('author_refresh', data.refresh);"
+            ]}
+          }]
+        },
+        {
+          "name": "Connecter le contributeur",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{contributor_username}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{base_url}}/api/token/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('JWT obtenu', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('contributor_access', pm.response.json().access);"
+            ]}
+          }]
+        },
+        {
+          "name": "Renouveler le jeton de l'auteur",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{author_refresh}}\"\n}"
+            },
+            "url": "{{base_url}}/api/token/refresh/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Jeton renouvelé', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('author_access', pm.response.json().access);"
+            ]}
+          }]
+        },
+        {
+          "name": "Lire le profil de l'auteur",
+          "request": {
+            "method": "GET",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{author_access}}", "type": "string"}]},
+            "url": "{{base_url}}/api/users/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Profil paginé reçu', () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.expect(data.results).to.have.length(1);",
+              "pm.collectionVariables.set('author_id', data.results[0].id);"
+            ]}
+          }]
+        },
+        {
+          "name": "Lire le profil du contributeur",
+          "request": {
+            "method": "GET",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{contributor_access}}", "type": "string"}]},
+            "url": "{{base_url}}/api/users/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Profil reçu', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('contributor_id', pm.response.json().results[0].id);"
+            ]}
+          }]
+        }
+      ]
+    },
+    {
+      "name": "2 - Projets et contributeurs",
+      "item": [
+        {
+          "name": "Créer un projet",
+          "request": {
+            "method": "POST",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{author_access}}", "type": "string"}]},
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"API de démonstration\",\n  \"description\": \"Projet créé avec la collection finale.\",\n  \"type\": \"BACK_END\"\n}"
+            },
+            "url": "{{base_url}}/api/projects/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Projet créé', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('project_id', pm.response.json().id);"
+            ]}
+          }]
+        },
+        {
+          "name": "Lister les projets paginés",
+          "request": {
+            "method": "GET",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{author_access}}", "type": "string"}]},
+            "url": "{{base_url}}/api/projects/?page=1&page_size=10"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Liste paginée', () => pm.response.to.have.status(200));",
+              "pm.expect(pm.response.json()).to.have.property('results');"
+            ]}
+          }]
+        },
+        {
+          "name": "Ajouter le contributeur",
+          "request": {
+            "method": "POST",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{author_access}}", "type": "string"}]},
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"user_id\": {{contributor_id}}\n}"},
+            "url": "{{base_url}}/api/projects/{{project_id}}/contributors/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Contributeur ajouté', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('contribution_id', pm.response.json().id);"
+            ]}
+          }]
+        },
+        {
+          "name": "Le contributeur lit le projet",
+          "request": {
+            "method": "GET",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{contributor_access}}", "type": "string"}]},
+            "url": "{{base_url}}/api/projects/{{project_id}}/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": ["pm.test('Lecture autorisée', () => pm.response.to.have.status(200));"]}
+          }]
+        },
+        {
+          "name": "Le contributeur ne modifie pas le projet",
+          "request": {
+            "method": "PATCH",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{contributor_access}}", "type": "string"}]},
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Modification interdite\"\n}"},
+            "url": "{{base_url}}/api/projects/{{project_id}}/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": ["pm.test('Modification refusée', () => pm.response.to.have.status(403));"]}
+          }]
+        }
+      ]
+    },
+    {
+      "name": "3 - Issues",
+      "item": [
+        {
+          "name": "Créer une issue",
+          "request": {
+            "method": "POST",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{author_access}}", "type": "string"}]},
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Corriger la page de connexion\",\n  \"description\": \"Le message d'erreur doit être plus clair.\",\n  \"tag\": \"BUG\",\n  \"priority\": \"HIGH\",\n  \"assignee_id\": {{contributor_id}}\n}"
+            },
+            "url": "{{base_url}}/api/projects/{{project_id}}/issues/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Issue créée', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('issue_id', pm.response.json().id);"
+            ]}
+          }]
+        },
+        {
+          "name": "Lister les issues",
+          "request": {
+            "method": "GET",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{contributor_access}}", "type": "string"}]},
+            "url": "{{base_url}}/api/projects/{{project_id}}/issues/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": ["pm.test('Issues visibles au contributeur', () => pm.response.to.have.status(200));"]}
+          }]
+        },
+        {
+          "name": "Terminer l'issue",
+          "request": {
+            "method": "PATCH",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{author_access}}", "type": "string"}]},
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"FINISHED\"\n}"},
+            "url": "{{base_url}}/api/projects/{{project_id}}/issues/{{issue_id}}/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": ["pm.test('Issue modifiée par son auteur', () => pm.response.to.have.status(200));"]}
+          }]
+        }
+      ]
+    },
+    {
+      "name": "4 - Commentaires",
+      "item": [
+        {
+          "name": "Créer un commentaire",
+          "request": {
+            "method": "POST",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{contributor_access}}", "type": "string"}]},
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"description\": \"Je prends la correction en charge.\"\n}"},
+            "url": "{{base_url}}/api/projects/{{project_id}}/issues/{{issue_id}}/comments/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": [
+              "pm.test('Commentaire créé', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('comment_id', pm.response.json().id);"
+            ]}
+          }]
+        },
+        {
+          "name": "Modifier son commentaire",
+          "request": {
+            "method": "PATCH",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{contributor_access}}", "type": "string"}]},
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"description\": \"Correction prise en charge et testée.\"\n}"},
+            "url": "{{base_url}}/api/projects/{{project_id}}/issues/{{issue_id}}/comments/{{comment_id}}/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": ["pm.test('Commentaire modifié par son auteur', () => pm.response.to.have.status(200));"]}
+          }]
+        },
+        {
+          "name": "L'auteur du projet ne modifie pas le commentaire d'un autre",
+          "request": {
+            "method": "PATCH",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{author_access}}", "type": "string"}]},
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"description\": \"Modification interdite\"\n}"},
+            "url": "{{base_url}}/api/projects/{{project_id}}/issues/{{issue_id}}/comments/{{comment_id}}/"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {"exec": ["pm.test('Modification refusée', () => pm.response.to.have.status(403));"]}
+          }]
+        }
+      ]
+    }
+  ]
+}
