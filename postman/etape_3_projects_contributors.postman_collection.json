@@ -1,0 +1,180 @@
+{
+  "info": {
+    "name": "SoftDesk - Étape 3 - Projets et contributeurs",
+    "description": "Exécuter les requêtes dans l'ordre. La collection crée les utilisateurs nécessaires.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://127.0.0.1:8000"},
+    {"key": "author_id", "value": ""},
+    {"key": "contributor_user_id", "value": ""},
+    {"key": "project_id", "value": ""},
+    {"key": "contributor_id", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "1 - Créer l'auteur",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"auteur_etape_3\",\n  \"password\": \"MotDePasseSolide2026!\",\n  \"age\": 32\n}"
+        },
+        "url": "{{base_url}}/api/users/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Auteur créé : 201', () => pm.response.to.have.status(201));",
+          "if (pm.response.code === 201) pm.collectionVariables.set('author_id', pm.response.json().id);"
+        ]}
+      }]
+    },
+    {
+      "name": "2 - Créer le futur contributeur",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"contributeur_etape_3\",\n  \"password\": \"MotDePasseSolide2026!\",\n  \"age\": 27\n}"
+        },
+        "url": "{{base_url}}/api/users/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Utilisateur créé : 201', () => pm.response.to.have.status(201));",
+          "if (pm.response.code === 201) pm.collectionVariables.set('contributor_user_id', pm.response.json().id);"
+        ]}
+      }]
+    },
+    {
+      "name": "3 - Créer un projet",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"API SoftDesk\",\n  \"description\": \"Projet de démonstration de l'étape 3.\",\n  \"type\": \"BACK_END\",\n  \"author_id\": {{author_id}}\n}"
+        },
+        "url": "{{base_url}}/api/projects/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Projet créé : 201', () => pm.response.to.have.status(201));",
+          "if (pm.response.code === 201) pm.collectionVariables.set('project_id', pm.response.json().id);"
+        ]}
+      }]
+    },
+    {
+      "name": "4 - Lister les projets",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/projects/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Liste reçue : 200', () => pm.response.to.have.status(200));"
+        ]}
+      }]
+    },
+    {
+      "name": "5 - Modifier le projet",
+      "request": {
+        "method": "PATCH",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Description modifiée depuis Postman.\"\n}"
+        },
+        "url": "{{base_url}}/api/projects/{{project_id}}/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Projet modifié : 200', () => pm.response.to.have.status(200));"
+        ]}
+      }]
+    },
+    {
+      "name": "6 - Ajouter un contributeur",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{contributor_user_id}}\n}"
+        },
+        "url": "{{base_url}}/api/projects/{{project_id}}/contributors/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Contributeur ajouté : 201', () => pm.response.to.have.status(201));",
+          "if (pm.response.code === 201) pm.collectionVariables.set('contributor_id', pm.response.json().id);"
+        ]}
+      }]
+    },
+    {
+      "name": "7 - Lister les contributeurs",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/projects/{{project_id}}/contributors/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Liste reçue : 200', () => pm.response.to.have.status(200));"
+        ]}
+      }]
+    },
+    {
+      "name": "8 - Refuser un contributeur en double",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{contributor_user_id}}\n}"
+        },
+        "url": "{{base_url}}/api/projects/{{project_id}}/contributors/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Doublon refusé : 400', () => pm.response.to.have.status(400));"
+        ]}
+      }]
+    },
+    {
+      "name": "9 - Retirer le contributeur",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/projects/{{project_id}}/contributors/{{contributor_id}}/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Contributeur retiré : 204', () => pm.response.to.have.status(204));"
+        ]}
+      }]
+    },
+    {
+      "name": "10 - Supprimer le projet",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/projects/{{project_id}}/"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {"exec": [
+          "pm.test('Projet supprimé : 204', () => pm.response.to.have.status(204));"
+        ]}
+      }]
+    }
+  ]
+}

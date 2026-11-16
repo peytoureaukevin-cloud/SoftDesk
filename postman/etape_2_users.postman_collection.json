@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "SoftDesk - Étape 2 - Utilisateurs",
+    "description": "Parcours CRUD du modèle User. Exécuter les requêtes dans l'ordre.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "user_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1 - Créer un utilisateur",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"utilisateur_etape_2\",\n  \"password\": \"MotDePasseSolide2026!\",\n  \"age\": 25,\n  \"can_be_contacted\": true,\n  \"can_data_be_shared\": false\n}"
+        },
+        "url": "{{base_url}}/api/users/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Utilisateur créé : 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('user_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 - Lister les utilisateurs",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/users/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Liste reçue : 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - Consulter un utilisateur",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/users/{{user_id}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Utilisateur trouvé : 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - Modifier un utilisateur",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"can_be_contacted\": false,\n  \"can_data_be_shared\": true\n}"
+        },
+        "url": "{{base_url}}/api/users/{{user_id}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Utilisateur modifié : 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 - Refuser un utilisateur de moins de 15 ans",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"utilisateur_trop_jeune\",\n  \"password\": \"MotDePasseSolide2026!\",\n  \"age\": 14\n}"
+        },
+        "url": "{{base_url}}/api/users/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Âge refusé : 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 - Supprimer un utilisateur",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/users/{{user_id}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Utilisateur supprimé : 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
