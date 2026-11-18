@@ -33,7 +33,7 @@ Django REST Framework.
 ### 1. Récupérer le projet
 
 ```bash
-git clone URL_DU_REPOSITORY
+git clone https://github.com/peytoureaukevin-cloud/SoftDesk.git
 cd SoftDesk
 ```
 

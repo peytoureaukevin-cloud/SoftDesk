@@ -77,9 +77,9 @@
             "listen": "test",
             "script": {"exec": [
               "pm.test('JWT obtenu', () => pm.response.to.have.status(200));",
-              "const data = pm.response.json();",
-              "pm.collectionVariables.set('author_access', data.access);",
-              "pm.collectionVariables.set('author_refresh', data.refresh);"
+              "const authData = pm.response.json();",
+              "pm.collectionVariables.set('author_access', authData.access);",
+              "pm.collectionVariables.set('author_refresh', authData.refresh);"
             ]}
           }]
         },
@@ -132,9 +132,9 @@
             "listen": "test",
             "script": {"exec": [
               "pm.test('Profil paginé reçu', () => pm.response.to.have.status(200));",
-              "const data = pm.response.json();",
-              "pm.expect(data.results).to.have.length(1);",
-              "pm.collectionVariables.set('author_id', data.results[0].id);"
+              "const profileData = pm.response.json();",
+              "pm.expect(profileData.results).to.have.length(1);",
+              "pm.collectionVariables.set('author_id', profileData.results[0].id);"
             ]}
           }]
         },
