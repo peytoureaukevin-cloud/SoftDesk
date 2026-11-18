@@ -37,13 +37,47 @@ git clone https://github.com/peytoureaukevin-cloud/SoftDesk.git
 cd SoftDesk
 ```
 
-### 2. Installer les dépendances
+### 2. Vérifier Python et Poetry
+
+Le projet nécessite Python 3.11 ou une version ultérieure compatible, ainsi que
+Poetry. Vérifiez que les deux commandes sont accessibles :
+
+```bash
+python3 --version
+poetry --version
+```
+
+Sous macOS, si le terminal répond `poetry: command not found` alors que Poetry
+est déjà installé dans `~/.local/bin`, ajoutez ce dossier au `PATH` de la session :
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+poetry --version
+```
+
+Pour conserver cette configuration, ajoutez la ligne suivante au fichier
+`~/.zshrc`, puis ouvrez un nouveau terminal :
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Si Poetry n'est pas encore installé, installez-le avant de poursuivre.
+
+### 3. Installer les dépendances
 
 ```bash
 poetry install --with dev
 ```
 
-### 3. Configurer les variables facultatives
+Sur un Mac où Poetry est installé mais absent du `PATH`, la même commande peut
+être lancée avec son chemin complet :
+
+```bash
+$HOME/.local/bin/poetry install --with dev
+```
+
+### 4. Configurer les variables facultatives
 
 Le projet possède des valeurs locales par défaut. Pour les remplacer :
 
@@ -56,11 +90,19 @@ export DJANGO_ALLOWED_HOSTS="127.0.0.1,localhost"
 Le fichier `.env.example` récapitule ces variables. Aucun secret réel ne doit
 être ajouté au dépôt Git.
 
-### 4. Préparer la base et démarrer l'API
+### 5. Préparer la base et démarrer l'API
 
 ```bash
 poetry run python manage.py migrate
 poetry run python manage.py runserver
+```
+
+Une fois l'environnement `.venv` créé, ces commandes équivalentes permettent de
+lancer Django directement, même si la commande `poetry` n'est pas accessible :
+
+```bash
+./.venv/bin/python manage.py migrate
+./.venv/bin/python manage.py runserver
 ```
 
 L'API est disponible sur `http://127.0.0.1:8000/`.
