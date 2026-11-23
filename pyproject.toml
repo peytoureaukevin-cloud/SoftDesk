@@ -20,7 +20,7 @@ package-mode = false
 
 [dependency-groups]
 dev = [
-    "ruff (>=0.17.5,<0.18.0)"
+    "ruff (>=0.17.6,<0.18.0)"
 ]
 
 [tool.ruff]
